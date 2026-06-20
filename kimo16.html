@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XTWAR | معرض الأعمال</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #07070a;
+  --gold: #ffcc00;
+  --gold-glow: rgba(255,204,0,0.4);
+  --glass: rgba(255,255,255,0.02);
+  --border: rgba(255,255,255,0.06);
+  --font: 'Cairo','Poppins',sans-serif;
+  --ease: all 0.5s cubic-bezier(0.25,1,0.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:#fff;font-family:var(--font);overflow-x:hidden;min-height:100vh}
+
+/* ══ BG (نفس ستايل خلفية الصفحة الرئيسية: نقشة سداسية واضحة + توهج ذهبي متحرك خفيف) ══ */
+.cyber-bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:#0c0a05}
+.cyber-bg .bg-image{position:absolute;top:-6%;left:-6%;width:112%;height:112%;object-fit:cover;filter:blur(2px) brightness(.7) saturate(1.05);transform:scale(1.02)}
+/* تظليل دافئ خفيف — النقشة تفضل واضحة زي الصفحة الرئيسية */
+.cyber-bg .bg-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(9,7,3,.55) 0%,rgba(9,7,3,.4) 45%,rgba(9,7,3,.6) 100%)}
+/* توهج ذهبي متحرك خفيف — حركة هادئة بدل الضباب الكتيف */
+.fog-layer{position:absolute;border-radius:50%;filter:blur(80px);mix-blend-mode:screen;pointer-events:none;will-change:transform}
+.fog-1{width:50vw;height:50vw;top:10%;left:-8%;background:radial-gradient(circle,rgba(255,204,0,.28),transparent 70%);animation:fogDrift1 46s ease-in-out infinite}
+.fog-2{width:42vw;height:42vw;bottom:-10%;right:-6%;background:radial-gradient(circle,rgba(255,204,0,.18),transparent 70%);animation:fogDrift2 54s ease-in-out infinite}
+.fog-3{width:36vw;height:36vw;top:30%;left:55%;background:radial-gradient(circle,rgba(255,235,150,.14),transparent 70%);animation:fogDrift3 60s ease-in-out infinite}
+@keyframes fogDrift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(6vw,4vh) scale(1.08)}}
+@keyframes fogDrift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-7vw,-4vh) scale(1.06)}}
+@keyframes fogDrift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5vw,6vh) scale(1.07)}}
+@media (prefers-reduced-motion: reduce){.fog-layer{animation:none}}
+#particles-canvas{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+/* ══ HEADER ══ */
+header{position:fixed;top:0;width:100%;padding:22px 6%;display:flex;align-items:center;justify-content:space-between;z-index:100;background:rgba(7,7,10,.5);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);transition:var(--ease)}
+header.sticky{padding:14px 6%;background:rgba(7,7,10,.92)}
+.logo{font-size:26px;font-weight:900;color:#fff;text-decoration:none;letter-spacing:1px}
+.logo span{color:var(--gold);text-shadow:0 0 12px var(--gold-glow)}
+.back-btn{display:flex;align-items:center;gap:8px;color:#ccc;text-decoration:none;font-size:14px;font-weight:600;border:1px solid var(--border);padding:8px 18px;border-radius:8px;transition:var(--ease)}
+.back-btn:hover{border-color:var(--gold);color:var(--gold);box-shadow:0 0 14px rgba(255,204,0,.15)}
+.back-btn i{font-size:13px}
+
+/* ══ PAGE TITLE ══ */
+.page-hero{padding:140px 6% 60px;text-align:center}
+.page-hero .section-tag{font-size:12px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;opacity:.8}
+.page-hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;background:linear-gradient(135deg,#fff 40%,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:16px}
+.page-hero p{color:#888;font-size:16px;max-width:520px;margin:0 auto;line-height:1.8}
+.category-badge{display:inline-block;margin-top:20px;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.3);color:var(--gold);padding:6px 20px;border-radius:20px;font-size:14px;font-weight:700;letter-spacing:1px}
+
+/* ══ FILTERS ══ */
+.filters-wrap{padding:0 6% 50px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.filter-btn{background:var(--glass);border:1px solid var(--border);color:#fff;padding:10px 24px;border-radius:30px;cursor:pointer;font-weight:600;font-family:var(--font);font-size:14px;transition:var(--ease)}
+.filter-btn.active,.filter-btn:hover{background:var(--gold);color:#000;border-color:var(--gold);box-shadow:0 0 18px var(--gold-glow)}
+
+/* ══ GALLERY GRID ══ */
+.gallery-section{padding:0 6% 80px}
+.gallery-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:24px;
+}
+
+/* بطاقة عادية — صورة واحدة لكل بطاقة (تم إلغاء تجميع الصور تحت بطاقة واحدة) */
+.gallery-card{
+  position:relative;border-radius:16px;overflow:hidden;
+  background:#0e0e14;border:1px solid var(--border);
+  cursor:pointer;transition:var(--ease);
+  aspect-ratio:4/3;
+}
+.gallery-card:hover{border-color:rgba(255,204,0,.35);transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.6),0 0 30px rgba(255,204,0,.06)}
+.gallery-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.25,1,.5,1)}
+.gallery-card:hover img{transform:scale(1.06)}
+.card-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#12121a,#08080f);transition:var(--ease)}
+.card-placeholder i{font-size:60px;color:rgba(255,255,255,.05);transition:var(--ease)}
+.gallery-card:hover .card-placeholder i{color:var(--gold);text-shadow:0 0 20px var(--gold-glow)}
+.card-info{position:absolute;bottom:0;left:0;right:0;padding:28px 22px 20px;background:linear-gradient(transparent,rgba(6,6,9,.96));transform:translateY(8px);opacity:0;transition:var(--ease)}
+.gallery-card:hover .card-info{transform:translateY(0);opacity:1}
+.card-info h4{font-size:17px;font-weight:700;margin-bottom:4px}
+.card-info p{font-size:13px;color:var(--gold);font-weight:600}
+
+/* ══ BEFORE/AFTER CARD — special ══ */
+.ba-card{
+  grid-column:span 2;
+  position:relative;border-radius:16px;overflow:hidden;
+  background:#0e0e14;border:1px solid rgba(255,204,0,.2);
+  cursor:pointer;transition:var(--ease);
+  aspect-ratio:16/7;
+}
+@media(max-width:768px){.ba-card{grid-column:span 1;aspect-ratio:1/1.2}}
+.ba-card:hover{border-color:rgba(255,204,0,.5);transform:translateY(-6px);box-shadow:0 20px 50px rgba(0,0,0,.7),0 0 40px rgba(255,204,0,.1)}
+.ba-inner{position:relative;width:100%;height:100%;display:flex}
+.ba-side{flex:1;position:relative;overflow:hidden}
+.ba-side img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.25,1,.5,1)}
+.ba-card:hover .ba-side img{transform:scale(1.04)}
+.ba-label{position:absolute;top:14px;font-size:11px;font-weight:900;letter-spacing:3px;padding:5px 14px;border-radius:4px;z-index:3}
+.ba-label.before{left:12px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);color:#ccc}
+.ba-label.after{right:12px;background:rgba(255,204,0,.9);color:#000}
+.ba-divider{position:absolute;top:0;bottom:0;left:50%;width:3px;background:var(--gold);box-shadow:0 0 16px var(--gold-glow);z-index:4;transform:translateX(-50%)}
+.ba-divider-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:5;box-shadow:0 0 20px var(--gold-glow)}
+.ba-divider-icon i{font-size:14px;color:#000}
+.ba-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.ba-placeholder i{font-size:50px;color:rgba(255,255,255,.05)}
+.ba-placeholder span{font-size:12px;color:rgba(255,255,255,.2);letter-spacing:2px}
+.ba-info{position:absolute;bottom:0;left:0;right:0;padding:20px 24px;background:linear-gradient(transparent,rgba(6,6,9,.97));z-index:6;transform:translateY(6px);opacity:0;transition:var(--ease)}
+.ba-card:hover .ba-info{transform:translateY(0);opacity:1}
+.ba-info h4{font-size:18px;font-weight:700;margin-bottom:4px}
+.ba-info p{font-size:13px;color:var(--gold);font-weight:600}
+
+/* ══ LIGHTBOX ══ */
+#lightbox{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.95);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;padding:20px}
+#lightbox.show{display:flex}
+.lb-inner{position:relative;max-width:1100px;width:100%;animation:lbIn .35s cubic-bezier(.25,1,.5,1)}
+@keyframes lbIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.lb-close{position:absolute;top:-48px;right:0;background:none;border:1px solid rgba(255,255,255,.15);color:#fff;width:36px;height:36px;border-radius:8px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--ease);z-index:2}
+.lb-close:hover{border-color:var(--gold);color:var(--gold)}
+.lb-img{width:100%;max-height:80vh;object-fit:contain;border-radius:12px;display:block}
+.lb-ba{display:flex;gap:4px;max-height:80vh;border-radius:12px;overflow:hidden}
+.lb-ba-side{flex:1;position:relative}
+.lb-ba-side img{width:100%;height:100%;object-fit:cover;display:block}
+.lb-ba-label{position:absolute;top:12px;font-size:11px;font-weight:900;letter-spacing:3px;padding:4px 12px;border-radius:4px}
+.lb-ba-label.before{left:10px;background:rgba(0,0,0,.7);color:#ccc;border:1px solid rgba(255,255,255,.15)}
+.lb-ba-label.after{right:10px;background:rgba(255,204,0,.9);color:#000}
+.lb-placeholder{width:100%;height:60vh;background:#0e0e14;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:14px}
+.lb-placeholder i{font-size:48px;color:#2a2a35}
+.lb-title{text-align:center;margin-top:16px;font-size:16px;font-weight:700;color:#ddd}
+.lb-sub{text-align:center;font-size:13px;color:var(--gold);margin-top:4px}
+.lb-nav{display:flex;justify-content:center;gap:12px;margin-top:18px}
+.lb-nav button{background:var(--glass);border:1px solid var(--border);color:#fff;padding:8px 20px;border-radius:8px;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:var(--ease);display:flex;align-items:center;gap:6px}
+.lb-nav button:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ══ EMPTY STATE ══ */
+.empty-state{text-align:center;padding:80px 20px;color:#444;display:none}
+.empty-state i{font-size:48px;margin-bottom:16px;display:block}
+.empty-state p{font-size:15px}
+
+/* ══ ANIMS ══ */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s,transform .8s}
+.reveal.visible{opacity:1;transform:none}
+
+/* ══ FOOTER ══ */
+footer{text-align:center;padding:30px;border-top:1px solid var(--border);color:#333;font-size:13px}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  .gallery-grid{grid-template-columns:1fr}
+  .page-hero{padding:120px 5% 40px}
+  .filters-wrap{padding:0 5% 36px}
+  .gallery-section{padding:0 5% 60px}
+}
+</style>
+</head>
+<body>
+
+<div class="cyber-bg">
+  <img class="bg-image" src="bg-hexagon.jpg" alt="">
+  <div class="bg-shade"></div>
+  <div class="fog-layer fog-1"></div>
+  <div class="fog-layer fog-2"></div>
+  <div class="fog-layer fog-3"></div>
+</div>
+<canvas id="particles-canvas"></canvas>
+
+<header id="navbar">
+  <a href="index.html" class="logo">XTWAR<span>.</span></a>
+  <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-right"></i> العودة</a>
+</header>
+
+<div class="page-hero reveal">
+  <div class="section-tag">XTWAR DESIGNS</div>
+  <h1 id="page-title">معرض الأعمال</h1>
+  <p>استعرض أعمالنا المنجزة بدقة تنفيذية متناهية وإبداع بصري لا مثيل له</p>
+  <div class="category-badge" id="category-badge">كافة المشاريع</div>
+</div>
+
+<div class="filters-wrap reveal">
+  <button class="filter-btn active" data-filter="all">الكل</button>
+  <button class="filter-btn" data-filter="signage">اللوحات والتقاطيع</button>
+  <button class="filter-btn" data-filter="indoor">الديكور الداخلي والنيون</button>
+  <button class="filter-btn" data-filter="fitout">تجهيز المحلات</button>
+  <button class="filter-btn" data-filter="before-after">قبل وبعد</button>
+</div>
+
+<div class="gallery-section">
+  <div class="gallery-grid" id="galleryGrid"></div>
+  <div class="empty-state" id="emptyState">
+    <i class="fa-regular fa-image"></i>
+    <p>لا توجد مشاريع في هذا القسم حتى الآن</p>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div class="lb-inner">
+    <button class="lb-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
+    <div id="lbContent"></div>
+    <div class="lb-nav">
+      <button onclick="lbNav(-1)"><i class="fas fa-chevron-right"></i> السابق</button>
+      <button onclick="closeLightbox()"><i class="fas fa-times"></i> إغلاق</button>
+      <button onclick="lbNav(1)">التالي <i class="fas fa-chevron-left"></i></button>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 XTWAR DESIGNS. السودان. جميع الحقوق محفوظة.</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// إعداد Supabase
+// ══════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://fuwwbfpabewdbbeymdee.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1d3diZnBhYmV3ZGJiZXltZGVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTE1MTQsImV4cCI6MjA5NzQ2NzUxNH0.rfV0ALEH8ti9nYWbAxThIcJRhxJEcJt_6dt00tLNs8Q';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// أيقونة افتراضية لكل قسم (تظهر فقط لو المنتج بدون صور)
+const defaultIcons = {
+  signage: 'fa-heading',
+  indoor: 'fa-lightbulb',
+  fitout: 'fa-store'
+};
+
+// ══ Read category from URL ══
+const urlParams = new URLSearchParams(window.location.search);
+const incomingCat = urlParams.get('cat') || 'all';
+
+const catNames = {
+  all: 'كافة المشاريع',
+  signage: 'اللوحات والتقاطيع',
+  indoor: 'الديكور الداخلي والنيون',
+  fitout: 'تجهيز المحلات',
+  'before-after': 'قبل وبعد'
+};
+
+// Set title + badge
+document.getElementById('page-title').textContent = catNames[incomingCat] || 'معرض الأعمال';
+document.getElementById('category-badge').textContent = catNames[incomingCat] || 'كافة المشاريع';
+
+// ══ Data ══
+// projects: البيانات الخام كما هي في قاعدة البيانات (مشروع واحد = صف واحد، وممكن يحتوي على أكثر من صورة)
+// visibleItems: قائمة مُسطّحة (flattened) تُستخدم في العرض والـ lightbox — كل صورة تظهر كبطاقة مستقلة
+let projects = [];
+let visibleItems = [];
+let activeFilter = incomingCat;
+let lbIndex = 0;
+
+// ══ تحميل البيانات من Supabase ══
+async function loadProjects() {
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:70px 0;color:#555"><i class="fa-solid fa-spinner fa-spin" style="font-size:28px;margin-bottom:14px;display:block"></i>جاري تحميل المشاريع...</div>';
+
+  const { data, error } = await supabaseClient
+    .from('gallery_projects')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:70px 0;color:#ff6b6b">تعذر تحميل المشاريع<br><span style="font-size:12px;color:#888">${error.message}</span></div>`;
+    return;
+  }
+
+  projects = (data || []).map(row => {
+    if (row.cat === 'before-after') {
+      return {
+        type: 'ba',
+        id: row.id,
+        cat: row.cat,
+        title: row.title,
+        sub: row.sub,
+        imgBefore: row.image_before,
+        imgAfter: row.image_after,
+        iconBefore: 'fa-building',
+        iconAfter: 'fa-store'
+      };
+    }
+    const imgs = Array.isArray(row.images) ? row.images : [];
+    return {
+      type: 'product',
+      id: row.id,
+      cat: row.cat,
+      icon: defaultIcons[row.cat] || 'fa-image',
+      title: row.title,
+      sub: row.sub,
+      images: imgs
+    };
+  });
+
+  renderGallery(incomingCat);
+  observeReveal();
+}
+
+// ══ تحويل المشاريع المفلترة إلى قائمة بطاقات مُسطّحة (كل صورة = بطاقة) ══
+function buildVisibleItems(filteredProjects) {
+  const items = [];
+  filteredProjects.forEach(p => {
+    if (p.type === 'ba') {
+      items.push(p);
+      return;
+    }
+    if (p.images.length) {
+      // كل صورة من صور المشروع تظهر كبطاقة منفصلة فور اختيار القسم
+      p.images.forEach(url => {
+        items.push({ type: 'product', cat: p.cat, icon: p.icon, title: p.title, sub: p.sub, img: url });
+      });
+    } else {
+      // مشروع بدون صور — بطاقة واحدة بأيقونة افتراضية
+      items.push({ type: 'product', cat: p.cat, icon: p.icon, title: p.title, sub: p.sub, img: null });
+    }
+  });
+  return items;
+}
+
+// ══ Render ══
+function renderGallery(filter) {
+  activeFilter = filter;
+  const grid = document.getElementById('galleryGrid');
+  const emptyState = document.getElementById('emptyState');
+
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === filter);
+  });
+
+  const filtered = filter === 'all' ? projects : projects.filter(p => p.cat === filter);
+  visibleItems = buildVisibleItems(filtered);
+
+  if (!visibleItems.length) {
+    grid.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+  emptyState.style.display = 'none';
+
+  grid.innerHTML = visibleItems.map((item, idx) => {
+    return item.type === 'ba' ? buildBACard(item, idx) : buildCard(item, idx);
+  }).join('');
+
+  grid.querySelectorAll('[data-idx]').forEach(el => {
+    el.addEventListener('click', () => openLightbox(+el.dataset.idx));
+  });
+}
+
+function buildCard(item, idx) {
+  const imgHTML = item.img
+    ? `<img src="${item.img}" alt="${item.title}" loading="lazy">`
+    : `<div class="card-placeholder"><i class="fa-solid ${item.icon}"></i></div>`;
+  return `
+  <div class="gallery-card reveal visible" data-idx="${idx}" style="transition-delay:${Math.min(idx*0.04,0.6)}s">
+    ${imgHTML}
+    <div class="card-info">
+      <h4>${item.title}</h4>
+      <p>${item.sub}</p>
+    </div>
+  </div>`;
+}
+
+function buildBACard(p, idx) {
+  const beforeHTML = p.imgBefore
+    ? `<img src="${p.imgBefore}" alt="قبل" loading="lazy">`
+    : `<div class="ba-placeholder"><i class="fa-solid ${p.iconBefore}"></i><span>قبل</span></div>`;
+  const afterHTML = p.imgAfter
+    ? `<img src="${p.imgAfter}" alt="بعد" loading="lazy">`
+    : `<div class="ba-placeholder"><i class="fa-solid ${p.iconAfter}"></i><span>بعد</span></div>`;
+  return `
+  <div class="ba-card reveal visible" data-idx="${idx}" style="transition-delay:${Math.min(idx*0.04,0.6)}s">
+    <div class="ba-inner">
+      <div class="ba-side">
+        ${beforeHTML}
+        <div class="ba-label before">قبل</div>
+      </div>
+      <div class="ba-divider">
+        <div class="ba-divider-icon"><i class="fas fa-exchange-alt"></i></div>
+      </div>
+      <div class="ba-side">
+        ${afterHTML}
+        <div class="ba-label after">بعد</div>
+      </div>
+    </div>
+    <div class="ba-info">
+      <h4>${p.title}</h4>
+      <p>${p.sub}</p>
+    </div>
+  </div>`;
+}
+
+// ══ Lightbox ══
+function openLightbox(idx) {
+  lbIndex = idx;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+}
+function lbNav(dir) {
+  lbIndex = (lbIndex + dir + visibleItems.length) % visibleItems.length;
+  renderLightbox();
+}
+function renderLightbox() {
+  const item = visibleItems[lbIndex];
+  const c = document.getElementById('lbContent');
+  if (item.type === 'ba') {
+    const bHTML = item.imgBefore
+      ? `<img src="${item.imgBefore}" alt="قبل">`
+      : `<div class="lb-placeholder"><i class="fa-solid ${item.iconBefore}"></i><span>صورة القبل</span></div>`;
+    const aHTML = item.imgAfter
+      ? `<img src="${item.imgAfter}" alt="بعد">`
+      : `<div class="lb-placeholder"><i class="fa-solid ${item.iconAfter}"></i><span>صورة البعد</span></div>`;
+    c.innerHTML = `
+      <div class="lb-ba">
+        <div class="lb-ba-side">${bHTML}<div class="lb-ba-label before">قبل</div></div>
+        <div class="lb-ba-side">${aHTML}<div class="lb-ba-label after">بعد</div></div>
+      </div>
+      <div class="lb-title">${item.title}</div>
+      <div class="lb-sub">${item.sub}</div>`;
+  } else {
+    const imgHTML = item.img
+      ? `<img class="lb-img" src="${item.img}" alt="${item.title}">`
+      : `<div class="lb-placeholder"><i class="fa-solid ${item.icon}"></i><span>${item.title}</span></div>`;
+    c.innerHTML = `${imgHTML}<div class="lb-title">${item.title}</div><div class="lb-sub">${item.sub}</div>`;
+  }
+}
+
+// close lightbox on backdrop click
+document.getElementById('lightbox').addEventListener('click', function(e){
+  if(e.target === this) closeLightbox();
+});
+
+// keyboard nav
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('lightbox').classList.contains('show')) return;
+  if(e.key==='ArrowRight') lbNav(-1);
+  if(e.key==='ArrowLeft')  lbNav(1);
+  if(e.key==='Escape')     closeLightbox();
+});
+
+// ══ Filter buttons ══
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const f = btn.dataset.filter;
+    document.getElementById('category-badge').textContent = catNames[f] || 'كافة المشاريع';
+    renderGallery(f);
+    observeReveal();
+  });
+});
+
+// ══ Scroll reveal ══
+function observeReveal() {
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, {threshold:.1});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+}
+
+// sticky header
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('sticky', scrollY > 40);
+});
+
+// ══ Particles ══
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = innerWidth; canvas.height = innerHeight;
+window.addEventListener('resize', () => { canvas.width = innerWidth; canvas.height = innerHeight; });
+const pts = Array.from({length:70}, () => ({
+  x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+  r: Math.random()*2+.4,
+  sx: Math.random()*.3-.15, sy: Math.random()*.3-.15
+}));
+(function anim(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  pts.forEach(p => {
+    p.x+=p.sx; p.y+=p.sy;
+    if(p.x<0) p.x=canvas.width; if(p.x>canvas.width) p.x=0;
+    if(p.y<0) p.y=canvas.height; if(p.y>canvas.height) p.y=0;
+    ctx.fillStyle='rgba(255,204,0,.3)';
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  });
+  requestAnimationFrame(anim);
+})();
+
+// ══ Init ══
+loadProjects();
+</script>
+</body>
+</html>
