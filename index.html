@@ -1187,6 +1187,16 @@
             menuToggle.firstElementChild.classList.toggle('fa-xmark');
         });
 
+        /* --- إغلاق منيو الموبايل تلقائياً عند اختيار أي قسم --- */
+        document.querySelectorAll('#navMenu ul a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('open');
+                const icon = menuToggle.firstElementChild;
+                icon.classList.add('fa-bars');
+                icon.classList.remove('fa-xmark');
+            });
+        });
+
         /* --- مراقب التمرير السلس وعداد الأرقام الرياضية --- */
         const reveals = document.querySelectorAll('.reveal');
         const counters = document.querySelectorAll('.counter');
