@@ -1,0 +1,22 @@
+# --------------------------------------------------
+# ATWAR DESIGNS - Official Robots.txt File
+# --------------------------------------------------
+
+User-agent: *
+Allow: /
+
+# تحديد الروابط الصديقة لمحركات البحث
+Allow: /index.html
+Allow: /kimo16.html
+
+# منع أرشفة ملفات التحقق أو النظام الداخلي (اختياري لتنظيف الأرشفة)
+Disallow: /.github/
+Disallow: /googlef807ddecc445918e.html
+
+# إشارة للملفات الرسومية الهامة للـ SEO
+Allow: /bg-hexagon.jpg
+Allow: /image_9fde05.jpg
+Allow: /qr-code.jpeg
+
+# مسار خريطة الموقع (لو حابب تضيفها مستقبلاً)
+# Sitemap: https://yourdomain.com/sitemap.xml
