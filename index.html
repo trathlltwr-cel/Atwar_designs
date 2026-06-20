@@ -795,8 +795,58 @@
             nav.open { top: 0; }
             nav ul { flex-direction: column; text-align: center; gap: 40px; }
             nav ul a { font-size: 22px; }
-            .hero-content h1 { font-size: 44px; }
-            .section-title h2 { font-size: 32px; }
+
+            .hero-content h1 { font-size: 38px; }
+            .hero-content p { font-size: 16px; }
+            .section-title { margin-bottom: 50px; }
+            .section-title h2 { font-size: 30px; }
+            .section-title p { font-size: 14px; }
+
+            /* أزرار البطل تترتب فوق بعض بدل ماتنقص أو تنقطع */
+            .btn-container {
+                flex-direction: column;
+                width: 100%;
+                gap: 16px;
+                margin-top: 35px;
+            }
+            .cyber-btn { width: 100%; padding: 16px 20px; }
+
+            .glass-card { padding: 26px; }
+
+            /* الشبكات تتحول لعمود واحد عشان ماتنقطع من الجوانب */
+            .services-grid,
+            .team-grid,
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .portfolio-item { height: 300px; }
+
+            .stats-container { grid-template-columns: repeat(2, 1fr); gap: 28px; }
+            .stat-box h2 { font-size: 42px; }
+            .stat-box p { font-size: 13px; }
+
+            .testimonial-slide { padding: 0 5px; }
+            .testimonial-slide p { font-size: 16px; line-height: 1.7; }
+
+            .contact-section-layout { gap: 35px; }
+            .info-item { gap: 14px; }
+
+            .social-links { flex-wrap: wrap; justify-content: center; gap: 18px; }
+            .social-links a { width: 58px; height: 58px; font-size: 24px; }
+
+            .footer-qr-container { width: 130px; height: 130px; }
+        }
+
+        /* --- شاشات الهواتف الصغيرة جداً --- */
+        @media (max-width: 420px) {
+            section { padding: 100px 6% 50px 6%; }
+            .hero-content h1 { font-size: 32px; }
+            .section-title h2 { font-size: 26px; }
+            .glass-card { padding: 20px; }
+            .stat-box h2 { font-size: 34px; }
+            .cyber-btn { font-size: 14px; padding: 14px 16px; }
+            .social-links a { width: 50px; height: 50px; font-size: 21px; }
         }
     </style>
 <base target="_blank">
